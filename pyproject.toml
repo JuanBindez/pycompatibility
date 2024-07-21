@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "pycompatibility"
 version = "1.0-a1"
 authors = [
-  { name="Seu Nome", email="seuemail@example.com" },
+  { name="Juan Bindez", email="juanbindez780@gmail.com" },
 ]
-description = "Python library for checking code compatibility with different Python versions."
+description = "Python3 library for checking code compatibility with different Python versions."
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT license"}
