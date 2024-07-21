@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=67.4.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pycompatibility"
+version = "1.0-a1"
+authors = [
+  { name="Seu Nome", email="seuemail@example.com" },
+]
+description = "Python library for checking code compatibility with different Python versions."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT license"}
+keywords = ["compatibility", "python", "code", "check"]
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Environment :: Console",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: MIT License",
+	"Natural Language :: English",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3.7",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Python",
+	"Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+"Homepage" = "https://github.com/JuanBindez/pycompatibility"
+"Bug Reports" = "https://github.com/JuanBindez/pycompatibility/issues"
+"Read the Docs" = "http://pycompatibility.readthedocs.io/"
+
+[project.scripts]
+pycompatibility = "pycompatibility.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pycompatibility*"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
