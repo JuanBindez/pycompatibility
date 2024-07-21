@@ -12,6 +12,11 @@
 
     pip install pycompatibility
 
+
+### Command line just pass the name of the script as an argument which will show compatibility
+
+    pycompatibility script.py
+
 ### test code:
 
 ```python
@@ -21,7 +26,3 @@ checker = CompatibilityChecker("script.py")
 checker.verify()
 
 ```
-
-### command line just pass the name of the script as an argument which will show compatibility
-
-    pycompatibility script.py
