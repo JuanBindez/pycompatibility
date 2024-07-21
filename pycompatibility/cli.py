@@ -1,18 +1,15 @@
-import sys
+import argparse
 from pycompatibility import CompatibilityChecker
 
 def main():
-    if len(sys.argv) != 2:
-        print("Uso: pycompatibility <script.py>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Check Python code compatibility.')
+    parser.add_argument('filename', type=str, help='The path to the Python file to check.')
 
-    filename = sys.argv[1]
-    checker = CompatibilityChecker(filename)
-    issues = checker.check_compatibility()
+    args = parser.parse_args()
 
-    if issues:
-        for issue in issues:
-            print(f"Linha {issue['line']}: {issue['message']}")
-            print(f"Sugestão: {issue['suggestion']}\n")
-    else:
-        print("Nenhum problema de compatibilidade detectado.")
+    checker = CompatibilityChecker(args.filename)
+    
+    checker.verify()
+
+if __name__ == '__main__':
+    main()
