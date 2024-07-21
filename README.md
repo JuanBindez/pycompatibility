@@ -1,5 +1,9 @@
 # pycompatibility
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pycompatibility)
+![PyPI - License](https://img.shields.io/pypi/l/pycompatibility)
+![GitHub Tag](https://img.shields.io/github/v/tag/JuanBindez/pycompatibility?include_prereleases)
+<a href="https://pypi.org/project/pycompatibility/"><img src="https://img.shields.io/pypi/v/pycompatibility" /></a>
 
 ## Python3 library for checking code compatibility with different Python versions.
 
