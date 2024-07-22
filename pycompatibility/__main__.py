@@ -12,14 +12,13 @@ class CompatibilityChecker:
         tree = ast.parse(source_code)
         issues = []
 
-        # Add debugging information for the AST code
-        print("AST structure:")
+        # Debugging information for the AST code
+        #print("AST structure:")
         for node in ast.walk(tree):
-            # Uncomment the next line to see the full AST structure
-            # print(ast.dump(node, annotate_fields=True))
             pass
+            #print(ast.dump(node, annotate_fields=True))
 
-        # Check type annotations
+        # Check type annotations using the type union operator '|'
         for node in ast.walk(tree):
             if isinstance(node, ast.AnnAssign):
                 annotation = node.annotation
@@ -27,12 +26,11 @@ class CompatibilityChecker:
                     left = annotation.left
                     right = annotation.right
                     if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
-                        if left.id == 'str':
-                            issues.append({
-                                'line': node.lineno,
-                                'message': "Use of the type union operator '|' detected. Introduced in Python 3.10.",
-                                'suggestion': "Replace 'str | None' with 'Optional[str]' from the 'typing' module."
-                            })
+                        issues.append({
+                            'line': node.lineno,
+                            'message': "Use of the type union operator '|' detected. Introduced in Python 3.10+.",
+                            'suggestion': "Replace 'int | None' with 'Optional[int]' from the 'typing' module."
+                        })
 
             elif isinstance(node, ast.FunctionDef):
                 for arg in node.args.args:
@@ -40,19 +38,18 @@ class CompatibilityChecker:
                         left = arg.annotation.left
                         right = arg.annotation.right
                         if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
-                            if left.id == 'str':
-                                issues.append({
-                                    'line': arg.lineno,
-                                    'message': "Use of the type union operator '|' detected. Introduced in Python 3.10.",
-                                    'suggestion': "Replace 'str | None' with 'Optional[str]' from the 'typing' module."
-                                })
+                            issues.append({
+                                'line': arg.lineno,
+                                'message': "Use of the type union operator '|' detected. Introduced in Python 3.10+.",
+                                'suggestion': "Replace 'int | None' with 'Optional[int]' from the 'typing' module."
+                            })
 
         # Check for walrus operator (Python 3.8+)
         for node in ast.walk(tree):
-            if isinstance(node, ast.Assign) and isinstance(node.value, ast.BinOp) and isinstance(node.value.op, ast.Assign):
+            if isinstance(node, ast.NamedExpr):
                 issues.append({
                     'line': node.lineno,
-                    'message': "Use of the walrus operator ':=' detected. Introduced in Python 3.8.",
+                    'message': "Use of the walrus operator ':=' detected. Introduced in Python 3.8+.",
                     'suggestion': "Refactor to avoid using the walrus operator ':='."
                 })
 
@@ -62,17 +59,26 @@ class CompatibilityChecker:
                 if node.args.posonlyargs:
                     issues.append({
                         'line': node.lineno,
-                        'message': "Use of positional-only parameters detected. Introduced in Python 3.8.",
+                        'message': "Use of positional-only parameters detected. Introduced in Python 3.8+.",
                         'suggestion': "Consider refactoring parameters if targeting Python 3.7."
                     })
 
         # Check for f-strings expressions (Python 3.8+)
         for node in ast.walk(tree):
-            if isinstance(node, ast.FormattedValue):  # Corrected attribute name
+            if isinstance(node, ast.FormattedValue):
                 issues.append({
                     'line': node.lineno,
                     'message': "Use of f-strings detected. Introduced in Python 3.6, but with enhanced features in Python 3.8+.",
                     'suggestion': "Consider refactoring f-strings if targeting an older version of Python."
+                })
+
+        # Check for structural pattern matching (Python 3.10+)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Match):
+                issues.append({
+                    'line': node.lineno,
+                    'message': "Use of structural pattern matching (match-case) detected. Introduced in Python 3.10+.",
+                    'suggestion': "Refactor to avoid using structural pattern matching."
                 })
 
         return issues

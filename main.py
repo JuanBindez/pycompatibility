@@ -1,5 +1,5 @@
 # main.py
 from pycompatibility import CompatibilityChecker
 
-checker = CompatibilityChecker("script1.py")
+checker = CompatibilityChecker("example_code.py")
 checker.verify()
