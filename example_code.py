@@ -1,3 +1,4 @@
+
 def example_function():
     x = 10
     y = (z := x + 5)  # Walrus operator (3.8+)
@@ -29,4 +30,17 @@ def example_function():
         print(a, b, c)
 
     positional_only_func(1, 2, 3)
-    
+
+    # Example for 'Self' type (Python 3.11+)
+    class MyClass:
+        def method(self: Self):  # Self type
+            print("Using Self type")
+
+    obj = MyClass()
+    obj.method()
+
+    # Example for 'except*' clause (Python 3.11+)
+    try:
+        raise ValueError("An error occurred")
+    except *ValueError as e:  # except* clause
+        print(f"Caught an exception: {e}")

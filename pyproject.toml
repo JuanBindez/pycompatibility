@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pycompatibility"
-version = "1.0-a3"
+version = "1.0-a4"
 authors = [
   { name="Juan Bindez", email="juanbindez780@gmail.com" },
 ]
