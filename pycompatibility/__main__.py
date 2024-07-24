@@ -9,15 +9,16 @@ class CompatibilityChecker:
         python_version (str): The target Python version for compatibility checking.
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, python_version="3.7"):
         """
-        Initializes the CompatibilityChecker with the given filename.
+        Initializes the CompatibilityChecker with the given filename and Python version.
 
         Parameters:
             filename (str): The name of the file containing the source code to check.
+            python_version (str): The target Python version for compatibility checking.
         """
         self.filename = filename
-        self.python_version = "3.7"
+        self.python_version = python_version
 
     def check_compatibility(self):
         """
@@ -36,12 +37,6 @@ class CompatibilityChecker:
 
         tree = ast.parse(source_code)
         issues = []
-
-        # Debugging information for the AST code
-        # print("AST structure:")
-        for node in ast.walk(tree):
-            pass
-            # print(ast.dump(node, annotate_fields=True))
 
         issues.extend(self.check_list_syntax(tree))
         issues.extend(self.check_type_union_operator(tree))
@@ -65,24 +60,25 @@ class CompatibilityChecker:
             list: A list of issues related to the use of list[T] syntax.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.AnnAssign):
-                if isinstance(node.annotation, ast.Subscript):
-                    if isinstance(node.annotation.value, ast.Name) and node.annotation.value.id == 'list':
-                        issues.append({
-                            'line': node.lineno,
-                            'message': "Use of list[T] syntax detected. Introduced in Python 3.9+.",
-                            'suggestion': "Replace 'list[T]' with 'List[T]' from the 'typing' module."
-                        })
-            elif isinstance(node, ast.FunctionDef):
-                for arg in node.args.args:
-                    if isinstance(arg.annotation, ast.Subscript):
-                        if isinstance(arg.annotation.value, ast.Name) and arg.annotation.value.id == 'list':
+        if self.version_at_least("3.9"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.AnnAssign):
+                    if isinstance(node.annotation, ast.Subscript):
+                        if isinstance(node.annotation.value, ast.Name) and node.annotation.value.id == 'list':
                             issues.append({
-                                'line': arg.lineno,
+                                'line': node.lineno,
                                 'message': "Use of list[T] syntax detected. Introduced in Python 3.9+.",
                                 'suggestion': "Replace 'list[T]' with 'List[T]' from the 'typing' module."
                             })
+                elif isinstance(node, ast.FunctionDef):
+                    for arg in node.args.args:
+                        if isinstance(arg.annotation, ast.Subscript):
+                            if isinstance(arg.annotation.value, ast.Name) and arg.annotation.value.id == 'list':
+                                issues.append({
+                                    'line': arg.lineno,
+                                    'message': "Use of list[T] syntax detected. Introduced in Python 3.9+.",
+                                    'suggestion': "Replace 'list[T]' with 'List[T]' from the 'typing' module."
+                                })
         return issues
 
     def check_type_union_operator(self, tree):
@@ -96,29 +92,30 @@ class CompatibilityChecker:
             list: A list of issues related to the use of the type union operator.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.AnnAssign):
-                annotation = node.annotation
-                if isinstance(annotation, ast.BinOp) and isinstance(annotation.op, ast.BitOr):
-                    left = annotation.left
-                    right = annotation.right
-                    if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
-                        issues.append({
-                            'line': node.lineno,
-                            'message': "Use of the type union operator '|' detected. Introduced in Python 3.10+.",
-                            'suggestion': "Replace 'int | None' with 'Optional[int]' from the 'typing' module."
-                        })
-            elif isinstance(node, ast.FunctionDef):
-                for arg in node.args.args:
-                    if isinstance(arg.annotation, ast.BinOp) and isinstance(arg.annotation.op, ast.BitOr):
-                        left = arg.annotation.left
-                        right = arg.annotation.right
+        if self.version_at_least("3.10"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.AnnAssign):
+                    annotation = node.annotation
+                    if isinstance(annotation, ast.BinOp) and isinstance(annotation.op, ast.BitOr):
+                        left = annotation.left
+                        right = annotation.right
                         if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
                             issues.append({
-                                'line': arg.lineno,
+                                'line': node.lineno,
                                 'message': "Use of the type union operator '|' detected. Introduced in Python 3.10+.",
                                 'suggestion': "Replace 'int | None' with 'Optional[int]' from the 'typing' module."
                             })
+                elif isinstance(node, ast.FunctionDef):
+                    for arg in node.args.args:
+                        if isinstance(arg.annotation, ast.BinOp) and isinstance(arg.annotation.op, ast.BitOr):
+                            left = arg.annotation.left
+                            right = arg.annotation.right
+                            if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
+                                issues.append({
+                                    'line': arg.lineno,
+                                    'message': "Use of the type union operator '|' detected. Introduced in Python 3.10+.",
+                                    'suggestion': "Replace 'int | None' with 'Optional[int]' from the 'typing' module."
+                                })
         return issues
 
     def check_walrus_operator(self, tree):
@@ -132,13 +129,14 @@ class CompatibilityChecker:
             list: A list of issues related to the use of the walrus operator.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.NamedExpr):
-                issues.append({
-                    'line': node.lineno,
-                    'message': "Use of the walrus operator ':=' detected. Introduced in Python 3.8+.",
-                    'suggestion': "Refactor to avoid using the walrus operator ':='."
-                })
+        if self.version_at_least("3.8"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.NamedExpr):
+                    issues.append({
+                        'line': node.lineno,
+                        'message': "Use of the walrus operator ':=' detected. Introduced in Python 3.8+.",
+                        'suggestion': "Refactor to avoid using the walrus operator ':='."
+                    })
         return issues
 
     def check_positional_only_parameters(self, tree):
@@ -152,14 +150,15 @@ class CompatibilityChecker:
             list: A list of issues related to the use of positional-only parameters.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef):
-                if node.args.posonlyargs:
-                    issues.append({
-                        'line': node.lineno,
-                        'message': "Use of positional-only parameters detected. Introduced in Python 3.8+.",
-                        'suggestion': "Consider refactoring parameters if targeting Python 3.7."
-                    })
+        if self.version_at_least("3.8"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    if node.args.posonlyargs:
+                        issues.append({
+                            'line': node.lineno,
+                            'message': "Use of positional-only parameters detected. Introduced in Python 3.8+.",
+                            'suggestion': "Consider refactoring parameters if targeting Python 3.7."
+                        })
         return issues
 
     def check_f_strings(self, tree):
@@ -173,13 +172,14 @@ class CompatibilityChecker:
             list: A list of issues related to the use of f-strings.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.FormattedValue):
-                issues.append({
-                    'line': node.lineno,
-                    'message': "Use of f-strings detected. Introduced in Python 3.6, but with enhanced features in Python 3.8+.",
-                    'suggestion': "Consider refactoring f-strings if targeting an older version of Python."
-                })
+        if self.version_at_least("3.6"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FormattedValue):
+                    issues.append({
+                        'line': node.lineno,
+                        'message': "Use of f-strings detected. Introduced in Python 3.6, but with enhanced features in Python 3.8+.",
+                        'suggestion': "Consider refactoring f-strings if targeting an older version of Python."
+                    })
         return issues
 
     def check_structural_pattern_matching(self, tree):
@@ -193,13 +193,14 @@ class CompatibilityChecker:
             list: A list of issues related to the use of structural pattern matching.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Match):
-                issues.append({
-                    'line': node.lineno,
-                    'message': "Use of structural pattern matching (match-case) detected. Introduced in Python 3.10+.",
-                    'suggestion': "Refactor to avoid using structural pattern matching."
-                })
+        if self.version_at_least("3.10"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Match):
+                    issues.append({
+                        'line': node.lineno,
+                        'message': "Use of structural pattern matching (match-case) detected. Introduced in Python 3.10+.",
+                        'suggestion': "Refactor to avoid using structural pattern matching."
+                    })
         return issues
 
     def check_self_type(self, tree):
@@ -213,15 +214,16 @@ class CompatibilityChecker:
             list: A list of issues related to the use of the 'Self' type.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef):
-                for arg in node.args.args:
-                    if isinstance(arg.annotation, ast.Name) and arg.annotation.id == 'Self':
-                        issues.append({
-                            'line': arg.lineno,
-                            'message': "Use of 'Self' type detected. Introduced in Python 3.11+.",
-                            'suggestion': "Replace 'Self' with the current class name."
-                        })
+        if self.version_at_least("3.11"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    for arg in node.args.args:
+                        if isinstance(arg.annotation, ast.Name) and arg.annotation.id == 'Self':
+                            issues.append({
+                                'line': arg.lineno,
+                                'message': "Use of 'Self' type detected. Introduced in Python 3.11+.",
+                                'suggestion': "Replace 'Self' with the current class name."
+                            })
         return issues
 
     def check_except_star(self, tree):
@@ -235,15 +237,30 @@ class CompatibilityChecker:
             list: A list of issues related to the use of the 'except*' clause.
         """
         issues = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ExceptHandler):
-                if isinstance(node.type, ast.BinOp) and isinstance(node.type.op, ast.BitOr):
-                    issues.append({
-                        'line': node.lineno,
-                        'message': "Use of 'except*' clause detected. Introduced in Python 3.11+.",
-                        'suggestion': "Refactor to avoid using 'except*' clause."
-                    })
+        if self.version_at_least("3.11"):
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ExceptHandler):
+                    if isinstance(node.type, ast.BinOp) and isinstance(node.type.op, ast.BitOr):
+                        issues.append({
+                            'line': node.lineno,
+                            'message': "Use of 'except*' clause detected. Introduced in Python 3.11+.",
+                            'suggestion': "Refactor to avoid using 'except*' clause."
+                        })
         return issues
+
+    def version_at_least(self, version):
+        """
+        Compares the current Python version with a specified version.
+
+        Parameters:
+            version (str): The version to compare against (e.g., "3.8").
+
+        Returns:
+            bool: True if the current version is greater than or equal to the specified version, False otherwise.
+        """
+        current_version = tuple(map(int, self.python_version.split(".")))
+        target_version = tuple(map(int, version.split(".")))
+        return current_version >= target_version
 
     def verify(self):
         """
