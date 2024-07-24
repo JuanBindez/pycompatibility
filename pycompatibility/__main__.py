@@ -43,6 +43,7 @@ class CompatibilityChecker:
             pass
             # print(ast.dump(node, annotate_fields=True))
 
+        issues.extend(self.check_list_syntax(tree))
         issues.extend(self.check_type_union_operator(tree))
         issues.extend(self.check_walrus_operator(tree))
         issues.extend(self.check_positional_only_parameters(tree))
@@ -51,6 +52,37 @@ class CompatibilityChecker:
         issues.extend(self.check_self_type(tree))
         issues.extend(self.check_except_star(tree))
 
+        return issues
+
+    def check_list_syntax(self, tree):
+        """
+        Checks for the use of list[T] syntax introduced in Python 3.9+.
+
+        Parameters:
+            tree (ast.AST): The AST of the source code.
+
+        Returns:
+            list: A list of issues related to the use of list[T] syntax.
+        """
+        issues = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.AnnAssign):
+                if isinstance(node.annotation, ast.Subscript):
+                    if isinstance(node.annotation.value, ast.Name) and node.annotation.value.id == 'list':
+                        issues.append({
+                            'line': node.lineno,
+                            'message': "Use of list[T] syntax detected. Introduced in Python 3.9+.",
+                            'suggestion': "Replace 'list[T]' with 'List[T]' from the 'typing' module."
+                        })
+            elif isinstance(node, ast.FunctionDef):
+                for arg in node.args.args:
+                    if isinstance(arg.annotation, ast.Subscript):
+                        if isinstance(arg.annotation.value, ast.Name) and arg.annotation.value.id == 'list':
+                            issues.append({
+                                'line': arg.lineno,
+                                'message': "Use of list[T] syntax detected. Introduced in Python 3.9+.",
+                                'suggestion': "Replace 'list[T]' with 'List[T]' from the 'typing' module."
+                            })
         return issues
 
     def check_type_union_operator(self, tree):

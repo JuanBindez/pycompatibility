@@ -1,4 +1,4 @@
-__version__ = "1.0-a4"
+__version__ = "1.0-a5"
 
 if __name__ == "__main__":
     print(__version__)
