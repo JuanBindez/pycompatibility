@@ -14,17 +14,17 @@
 
 #### The pycompatibility detects and reports the use of the following features introduced after Python 3.7:
 
-* 1 Walrus Operator (:=): Introduced in Python 3.8, this operator allows variable assignment within expressions. The tool detects its usage and suggests refactoring to avoid its use if maintaining compatibility with older versions is necessary.
+* `Walrus Operator (:=)`: Introduced in Python 3.8, this operator allows variable assignment within expressions. The tool detects its usage and suggests refactoring to avoid its use if maintaining compatibility with older versions is necessary.
 
-* 2 Positional-Only Parameters: Introduced in Python 3.8, these parameters are defined with the / syntax. The tool alerts you to their use and recommends refactoring to ensure compatibility with Python 3.7.
+* `Positional-Only Parameters`: Introduced in Python 3.8, these parameters are defined with the / syntax. The tool alerts you to their use and recommends refactoring to ensure compatibility with Python 3.7.
 
-* 3 Assignment Expressions in Comprehensions: Introduced in Python 3.9, these expressions allow variable assignment within comprehensions. The tool identifies these expressions and suggests alternatives.
+* `Assignment Expressions in Comprehensions`: Introduced in Python 3.9, these expressions allow variable assignment within comprehensions. The tool identifies these expressions and suggests alternatives.
 
-* 4 Type Union Operator (|): Introduced in Python 3.10, this operator allows combining types in annotations. The tool detects the use of this operator and suggests replacing it with Optional from the typing module.
+* `Type Union Operator (|)`: Introduced in Python 3.10, this operator allows combining types in annotations. The tool detects the use of this operator and suggests replacing it with Optional from the typing module.
 
-* 5 Structural Pattern Matching (match-case): Introduced in Python 3.10, structural pattern matching allows code to be organized based on patterns. The tool identifies this construct and suggests avoiding its use if compatibility with older versions is required.
+* `Structural Pattern Matching (match-case)`: Introduced in Python 3.10, structural pattern matching allows code to be organized based on patterns. The tool identifies this construct and suggests avoiding its use if compatibility with older versions is required.
 
-* 6 Enhanced F-strings: F-strings were enhanced in Python 3.8. The tool detects the use of f-strings and provides refactoring suggestions if needed.
+* `Enhanced F-strings`: F-strings were enhanced in Python 3.8. The tool detects the use of f-strings and provides refactoring suggestions if needed.
 
 
 ### Install
